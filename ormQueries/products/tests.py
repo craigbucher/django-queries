@@ -73,7 +73,7 @@ class ProductCrudTestCase(TestCase):
         self.assertEquals(product_ids, [2, 3, 6, 29])
 
     def test_12_manufacturer_names_for_query(self):
-        """returns a list of manufacturer names that match query"""
+        """returns a list of manufacturer names that match query""" # sorted alphabetically
         product_crud = ProductCrud.manufacturer_names_for_query('Group')
         self.assertCountEqual(product_crud, ["Lakin Group", "Nikolaus Group","Rolfson Group", "Watsica Group"])
 

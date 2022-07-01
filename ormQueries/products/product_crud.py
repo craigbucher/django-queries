@@ -1,7 +1,8 @@
+from django.conf import PASSWORD_RESET_TIMEOUT_DAYS_DEPRECATED_MSG
 from .models import Product
-from django.db import models
-from datetime import datetime 
-from django.utils import timezone 
+from django.db.models import Q, Avg, Max
+from django.db.models.functions import Length
+
 
 class ProductCrud:
     
@@ -38,4 +39,48 @@ class ProductCrud:
 
     @classmethod
     def no_color_count(cls):
-        return Product.objects.filter(color__exact = None).count()    
+        return Product.objects.filter(color__exact = None).count()
+
+    @classmethod
+    def below_price_or_above_rating(cls, price, rating):
+        return Product.objects.filter(price_cents__lt = price) | Product.objects.filter(rating__gt = rating) 
+
+    @classmethod
+    def ordered_by_category_alphabetical_order_and_then_price_decending(cls):
+        return Product.objects.all().order_by('category', '-price_cents')
+
+    @classmethod
+    def products_by_manufacturer_with_name_like(cls, name):
+        return Product.objects.filter(manufacturer__icontains = name)
+
+    @classmethod
+    def manufacturer_names_for_query(cls, query): # also needs to be alphabetical
+        return Product.objects.filter(manufacturer__icontains = query).order_by().values_list('manufacturer', flat = True)
+    
+    @classmethod
+    def not_in_a_category(cls, category):
+        return Product.objects.filter(~Q(category__icontains = category))
+
+    @classmethod
+    def limited_not_in_a_category(cls, category, limit):
+        return Product.objects.filter((~Q(category__icontains = category)))[:limit]
+
+    @classmethod
+    def category_manufacturers(cls, category):
+        return Product.objects.filter(category__exact = category).values_list('manufacturer', flat = True)
+        
+    @classmethod
+    def average_category_rating(cls, category):
+        return Product.objects.filter(category__exact = category).aggregate(Avg('rating'))
+
+    @classmethod
+    def greatest_price(cls):
+        return Product.objects.aggregate(Max('price_cents'))
+
+    @classmethod
+    def longest_model_name(cls):
+        return Product.objects.aggregate(Max('model'))
+
+    @classmethod
+    def ordered_by_model_length(cls):
+        return Product.objects.all().order_by(Length('model'))
